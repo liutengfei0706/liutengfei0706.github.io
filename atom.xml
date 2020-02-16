@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://liutengfei0706.github.io/"/>
-  <updated>2020-02-16T14:04:24.415Z</updated>
+  <updated>2020-02-16T14:10:25.188Z</updated>
   <id>https://liutengfei0706.github.io/</id>
   
   <author>
@@ -17,11 +17,11 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>hello-world</title>
-    <link href="https://liutengfei0706.github.io/2020/02/16/hello-world/"/>
-    <id>https://liutengfei0706.github.io/2020/02/16/hello-world/</id>
-    <published>2020-02-16T11:41:02.422Z</published>
-    <updated>2020-02-16T14:04:24.415Z</updated>
+    <title>recursion</title>
+    <link href="https://liutengfei0706.github.io/2020/02/16/recursion/"/>
+    <id>https://liutengfei0706.github.io/2020/02/16/recursion/</id>
+    <published>2020-02-16T14:10:02.934Z</published>
+    <updated>2020-02-16T14:10:25.188Z</updated>
     
     <content type="html"><![CDATA[<h1 id="Recursion"><a href="#Recursion" class="headerlink" title="Recursion"></a>Recursion</h1><p>递归是一种非常高效、简洁的编码技巧，它通过一个函数在执行过程中一次或多次调用其本身，或通过一种数据结构在其表示中依赖于相同类型的结构更小的实例来实现。</p><h2 id="递归需要满足的三个条件"><a href="#递归需要满足的三个条件" class="headerlink" title="递归需要满足的三个条件"></a>递归需要满足的三个条件</h2><ol><li>一个问题的解可以分解为几个子问题的解。</li><li>这个问题与分解之后的子问题，除了数据规模不同，求解思路完全一样。</li><li>存在递归终止条件。</li></ol><h2 id="如何编写递归代码"><a href="#如何编写递归代码" class="headerlink" title="如何编写递归代码"></a>如何编写递归代码</h2><p>写递归代码的关键就是找到如何将大问题分解为小问题的规律，并且基于此写出递推公式，然后再推敲终止条件，最后将递推公式和终止条件翻译成代码。</p><h2 id="递归的优缺点？"><a href="#递归的优缺点？" class="headerlink" title="递归的优缺点？"></a>递归的优缺点？</h2><ul><li>优点：代码的表达力很强，写起来简洁。</li><li>缺点：空间复杂度高、有堆栈溢出风险、存在重复计算、过多的函数调用会耗时较多等问题。</li></ul><h2 id="递归常见问题及解决方案"><a href="#递归常见问题及解决方案" class="headerlink" title="递归常见问题及解决方案"></a>递归常见问题及解决方案</h2><ul><li>堆栈溢出：可以声明一个全局变量来控制递归的深度，从而避免堆栈溢出。</li><li>重复计算：记忆化（memoization）可以用来避免这个问题。</li></ul><h2 id="尾递归"><a href="#尾递归" class="headerlink" title="尾递归"></a>尾递归</h2><p>当递归调用是整个函数体中最后执行的语句且它的返回值不属于表达式的一部分时，这个递归调用就是尾递归。 当函数的调用层数非常多时，调用栈会消耗不少内存，甚至会撑爆内存空间，造成程序严重卡顿或意外崩溃。尾递归的调用栈则特别易于优化，从而可减少内存空间的使用，也能提高运行速度。</p><h2 id="LeetCode"><a href="#LeetCode" class="headerlink" title="LeetCode"></a>LeetCode</h2><h3 id="509-斐波那契数"><a href="#509-斐波那契数" class="headerlink" title="509. 斐波那契数"></a><a href="https://leetcode-cn.com/problems/fibonacci-number/" target="_blank" rel="noopener">509. 斐波那契数</a></h3><p>斐波那契数，通常用 F(n) 表示，形成的序列称为斐波那契数列。该数列由 0 和 1 开始，后面的每一项数字都是前面两项数字的和。也就是：</p><blockquote><p>F(0) = 0,   F(1) = 1<br>F(N) = F(N - 1) + F(N - 2), 其中 N &gt; 1.</p></blockquote><p>给定 N，计算 F(N)。</p>]]></content>
     

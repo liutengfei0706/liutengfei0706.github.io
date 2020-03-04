@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"liutengfei0706.github.io","root":"/","scheme":"Mist","version":"7.7.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Python的list类是高度优化的，并且通常是考虑存储问题时很好的选择。除此之外，他也有一些明显的缺点：  一个动态数组的长度可能超过实际存储元素所需的长度。 在实时系统中对操作的摊销边界是不可接受的。 在一个数组内部执行插入和删除操作的代价太高。  链表为我们提供了另一种选择。基于数组的序列和链表都能够对其中的元素保持一定的顺序，但是采用的方式截然不同。链表采用更多的分布式的表示方法，采用称作">
+<meta property="og:type" content="article">
+<meta property="og:title" content="链表">
+<meta property="og:url" content="https://liutengfei0706.github.io/2020/03/04/%E9%93%BE%E8%A1%A8/index.html">
+<meta property="og:site_name" content="Mr.Fei">
+<meta property="og:description" content="Python的list类是高度优化的，并且通常是考虑存储问题时很好的选择。除此之外，他也有一些明显的缺点：  一个动态数组的长度可能超过实际存储元素所需的长度。 在实时系统中对操作的摊销边界是不可接受的。 在一个数组内部执行插入和删除操作的代价太高。  链表为我们提供了另一种选择。基于数组的序列和链表都能够对其中的元素保持一定的顺序，但是采用的方式截然不同。链表采用更多的分布式的表示方法，采用称作">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-03-04T15:08:01.590Z">
+<meta property="article:modified_time" content="2020-03-04T15:10:02.174Z">
+<meta property="article:author" content="Liu Tengfei">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://liutengfei0706.github.io/2020/03/04/%E9%93%BE%E8%A1%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>链表 | Mr.Fei</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="Mr.Fei" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Mr.Fei</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-right"></div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en">
+    <link itemprop="mainEntityOfPage" href="https://liutengfei0706.github.io/2020/03/04/%E9%93%BE%E8%A1%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Liu Tengfei">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Mr.Fei">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          链表
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2020-03-04 23:08:01 / Modified: 23:10:02" itemprop="dateCreated datePublished" datetime="2020-03-04T23:08:01+08:00">2020-03-04</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Python的list类是高度优化的，并且通常是考虑存储问题时很好的选择。除此之外，他也有一些明显的缺点：</p>
+<ol>
+<li>一个动态数组的长度可能超过实际存储元素所需的长度。</li>
+<li>在实时系统中对操作的摊销边界是不可接受的。</li>
+<li>在一个数组内部执行插入和删除操作的代价太高。</li>
+</ol>
+<p>链表为我们提供了另一种选择。基于数组的序列和链表都能够对其中的元素保持一定的顺序，但是采用的方式截然不同。链表采用更多的分布式的表示方法，采用称作节点的轻量级对象。每个节点维护一个指向它的元素的引用，并含一个或多个指向相邻节点的引用。</p>
+<h3 id="单向链表"><a href="#单向链表" class="headerlink" title="单向链表"></a>单向链表</h3><p>单向链表最简单的形式就是由多个节点的集合构成一个线性序列。每个节点存储一个对象引用，这个引用指向序列中的一个元素，即存储指向列表中的下一个节点。</p>
+<h4 id="单向链表实现"><a href="#单向链表实现" class="headerlink" title="单向链表实现"></a>单向链表实现</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Node</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="string">""" 链表节点 """</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, data=None)</span>:</span></span><br><span class="line">        self.data = data</span><br><span class="line">        self.next = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LinkedList</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="string">""" 单向链表实现 """</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">""" 初始化链表 """</span></span><br><span class="line">        self._head = Node(<span class="number">0</span>)  <span class="comment"># 使用头节点的data表示链表长度</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__len__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        计算链表长度</span></span><br><span class="line"><span class="string">        :return: 链表长度</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">return</span> self._head.data</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        展示列表元素</span></span><br><span class="line"><span class="string">        :return: 链表元素</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        cur = self._head.next</span><br><span class="line">        linked_list_str = <span class="string">"head"</span></span><br><span class="line">        <span class="keyword">while</span> cur <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            linked_list_str = <span class="string">"&#123;0&#125; -&gt; &#123;1&#125;"</span>.format(linked_list_str, cur.data)</span><br><span class="line">            cur = cur.next</span><br><span class="line">        <span class="keyword">return</span> linked_list_str</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">empty</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        判定链表是否为空</span></span><br><span class="line"><span class="string">        :return: True/False</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">return</span> self._head.data == <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self, index)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        获取第index个元素</span></span><br><span class="line"><span class="string">        :param index: 获取的元素索引</span></span><br><span class="line"><span class="string">        :return: 节点的值</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= index &lt; self._head.data:</span><br><span class="line">            <span class="keyword">raise</span> IndexError(<span class="string">"index out of range!"</span>)</span><br><span class="line">        cur = self._head.next</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(index):</span><br><span class="line">            cur = cur.next</span><br><span class="line">        <span class="keyword">return</span> cur.data</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">insert</span><span class="params">(self, index, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        向链表的第index位置插入元素</span></span><br><span class="line"><span class="string">        :param index: 链表的索引</span></span><br><span class="line"><span class="string">        :param value: 插入的值</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= index &lt;= self._head.data:</span><br><span class="line">            <span class="keyword">raise</span> IndexError(<span class="string">"index out of range!"</span>)</span><br><span class="line">        new_node = Node(value)</span><br><span class="line">        cur = self._head</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(index):</span><br><span class="line">            cur = cur.next</span><br><span class="line">        new_node.next = cur.next</span><br><span class="line">        cur.next = new_node</span><br><span class="line">        self._head.data += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">remove</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        删除链表中值为value的第一个节点</span></span><br><span class="line"><span class="string">        :param value: 要删除的值</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        cur = self._head</span><br><span class="line">        <span class="keyword">while</span> cur.next <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">if</span> cur.next.data == value:</span><br><span class="line">                cur.next = cur.next.next</span><br><span class="line">                self._head.data -= <span class="number">1</span></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">            cur = cur.next</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">delete</span><span class="params">(self, index)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        删除链表的第index个节点</span></span><br><span class="line"><span class="string">        :param index: 要删除的节点索引</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= index &lt; self._head.data:</span><br><span class="line">            <span class="keyword">raise</span> IndexError(<span class="string">"index out of range!"</span>)</span><br><span class="line">        cur = self._head</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(index):</span><br><span class="line">            cur = cur.next</span><br><span class="line">        cur.next = cur.next.next</span><br><span class="line">        self._head.data -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">append</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        向链表追加元素</span></span><br><span class="line"><span class="string">        :param value: 要添加的数据</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        cur = self._head</span><br><span class="line">        new_node = Node(value)</span><br><span class="line">        <span class="keyword">while</span> cur.next <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            cur = cur.next</span><br><span class="line">        cur.next = new_node</span><br><span class="line">        self._head.data += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">prepend</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        向链表头部添加元素</span></span><br><span class="line"><span class="string">        :param value: 要添加的数据</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        new_node = Node(value)</span><br><span class="line">        new_node.next = self._head.next</span><br><span class="line">        self._head.next = new_node</span><br><span class="line">        self._head.data += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">find</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        查找value是否存在</span></span><br><span class="line"><span class="string">        :param value: 要查找的值</span></span><br><span class="line"><span class="string">        :return: Node/None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        cur = self._head.next</span><br><span class="line">        <span class="keyword">while</span> cur <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">if</span> cur.data == value:</span><br><span class="line">                <span class="keyword">return</span> cur</span><br><span class="line">            cur = cur.next</span><br></pre></td></tr></table></figure>
+
+<p>在单向链表的实现中，引入个head节点，并用head.data来记录链表的长度。引入head节点主要有两个好处：</p>
+<ol>
+<li>空链表和非空链表操作一致。</li>
+<li>第一个节点和其他位置节点的操作一致。</li>
+</ol>
+<h3 id="循环链表"><a href="#循环链表" class="headerlink" title="循环链表"></a>循环链表</h3><p>在链表中，我们将链表尾部的next指针指向链表的头部，可以得到循环链表。</p>
+<h4 id="循环链表实现"><a href="#循环链表实现" class="headerlink" title="循环链表实现"></a>循环链表实现</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Node</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="string">""" 链表节点 """</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, data=None)</span>:</span></span><br><span class="line">        self.data = data</span><br><span class="line">        self.next = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CircularLinkedList</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="string">""" 循环链表实现 """</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">""" 初始化链表 """</span></span><br><span class="line">        self._tail = <span class="literal">None</span></span><br><span class="line">        self._size = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__len__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        计算链表长度</span></span><br><span class="line"><span class="string">        :return: 链表长度</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">return</span> self._size</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        展示列表元素</span></span><br><span class="line"><span class="string">        :return: 链表元素</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        cur = self._tail.next</span><br><span class="line">        linked_list_str = <span class="string">"head"</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(self._size):</span><br><span class="line">            linked_list_str = <span class="string">"&#123;0&#125; -&gt; &#123;1&#125;"</span>.format(linked_list_str, cur.data)</span><br><span class="line">            cur = cur.next</span><br><span class="line">        <span class="keyword">return</span> linked_list_str</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">empty</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        判定链表是否为空</span></span><br><span class="line"><span class="string">        :return: True/False</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">return</span> self._size == <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get</span><span class="params">(self, index)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        获取第index个元素</span></span><br><span class="line"><span class="string">        :param index: 获取的元素索引</span></span><br><span class="line"><span class="string">        :return: 节点的值</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= index &lt; self._size:</span><br><span class="line">            <span class="keyword">raise</span> IndexError(<span class="string">"index out of range!"</span>)</span><br><span class="line">        cur = self._tail.next</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(index):</span><br><span class="line">            cur = cur.next</span><br><span class="line">        <span class="keyword">return</span> cur.data</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">insert</span><span class="params">(self, index, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        向链表的第index位置插入元素</span></span><br><span class="line"><span class="string">        :param index: 链表的索引</span></span><br><span class="line"><span class="string">        :param value: 插入的值</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= index &lt;= self._size:</span><br><span class="line">            <span class="keyword">raise</span> IndexError(<span class="string">"index out of range!"</span>)</span><br><span class="line">        new_node = Node(value)</span><br><span class="line">        cur = self._tail</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(index):</span><br><span class="line">            cur = cur.next</span><br><span class="line">        <span class="keyword">if</span> index == self._size:</span><br><span class="line">            self._tail = new_node</span><br><span class="line">        new_node.next = cur.next</span><br><span class="line">        cur.next = new_node</span><br><span class="line">        self._size += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">remove</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        删除链表中值为value的第一个节点</span></span><br><span class="line"><span class="string">        :param value: 要删除的值</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        cur = self._tail</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(self._size):</span><br><span class="line">            <span class="keyword">if</span> cur.next.data == value:</span><br><span class="line">                <span class="keyword">if</span> cur.next == self._tail:</span><br><span class="line">                    self._tail = cur</span><br><span class="line">                cur.next = cur.next.next</span><br><span class="line">                self._size -= <span class="number">1</span></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">            cur = cur.next</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">delete</span><span class="params">(self, index)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        删除链表的第index个节点</span></span><br><span class="line"><span class="string">        :param index: 要删除的节点索引</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= index &lt; self._size:</span><br><span class="line">            <span class="keyword">raise</span> IndexError(<span class="string">"index out of range!"</span>)</span><br><span class="line">        cur = self._tail</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(index):</span><br><span class="line">            cur = cur.next</span><br><span class="line">        <span class="keyword">if</span> cur.next == self._tail:</span><br><span class="line">            self._tail = cur</span><br><span class="line">        cur.next = cur.next.next</span><br><span class="line">        self._size -= <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">append</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        向链表追加元素</span></span><br><span class="line"><span class="string">        :param value: 要添加的数据</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        new_node = Node(value)</span><br><span class="line">        <span class="keyword">if</span> self.empty():</span><br><span class="line">            new_node.next = new_node</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            new_node.next = self._tail.next</span><br><span class="line">            self._tail.next = new_node</span><br><span class="line">        self._tail = new_node</span><br><span class="line">        self._size += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">prepend</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        向链表头部添加元素</span></span><br><span class="line"><span class="string">        :param value: 要添加的数据</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        new_node = Node(value)</span><br><span class="line">        <span class="keyword">if</span> self.empty():</span><br><span class="line">            new_node.next = new_node</span><br><span class="line">            self._tail = new_node</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            new_node.next = self._tail.next</span><br><span class="line">            self._tail.next = new_node</span><br><span class="line">        self._size += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">find</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        查找value是否存在</span></span><br><span class="line"><span class="string">        :param value: 要查找的值</span></span><br><span class="line"><span class="string">        :return: Node/None</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        cur = self._tail.next</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(self._size):</span><br><span class="line">            <span class="keyword">if</span> cur.data == value:</span><br><span class="line">                <span class="keyword">return</span> cur</span><br><span class="line">            cur = cur.next</span><br></pre></td></tr></table></figure>
+
+<h3 id="双向链表"><a href="#双向链表" class="headerlink" title="双向链表"></a>双向链表</h3><p>双向链表的每个节点都维护了指向其先驱节点以及后继节点的引用。在操作双向链表的边界时，为了避免一些特殊情况，在链表的两端都追加节点是很有用处的。在链表的起始位置添加头节点，在链表的尾部添加尾节点。这些特定的节点称为哨兵。</p>
+<h4 id="双向链表实现"><a href="#双向链表实现" class="headerlink" title="双向链表实现"></a>双向链表实现</h4><p>我们实现一个私有类，提供基础的双向链表操作方法。根据此基础类我们可以提供一个双端队列的公有类。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Node</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="string">""" 双向链表节点 """</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, data=None, prev_node=None, next_node=None)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        初始化链表节点</span></span><br><span class="line"><span class="string">        :param data: 节点的值</span></span><br><span class="line"><span class="string">        :param prev_node: 前驱节点</span></span><br><span class="line"><span class="string">        :param next_node: 后继节点</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        self.data = data</span><br><span class="line">        self.prev = prev_node</span><br><span class="line">        self.next = next_node</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">_DoublyLinkedBase</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="string">""" 双向链表 """</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">""" 初始化双向链表 """</span></span><br><span class="line">        self._head = Node()</span><br><span class="line">        self._tail = Node()</span><br><span class="line">        self._head.next = self._tail</span><br><span class="line">        self._tail.prev = self._head</span><br><span class="line">        self._size = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__len__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        求链表长度</span></span><br><span class="line"><span class="string">        :return: 链表长度值</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">return</span> self._size</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__str__</span><span class="params">(self)</span>:</span></span><br><span class="line">        cur = self._head.next</span><br><span class="line">        doubly_linked_list = <span class="string">"head"</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(self._size):</span><br><span class="line">            doubly_linked_list = <span class="string">"&#123;0&#125; &lt;-&gt; &#123;1&#125;"</span>.format(doubly_linked_list, cur.data)</span><br><span class="line">            cur = cur.next</span><br><span class="line">        doubly_linked_list = <span class="string">"&#123;0&#125; &lt;-&gt; tail"</span>.format(doubly_linked_list)</span><br><span class="line">        <span class="keyword">return</span> doubly_linked_list</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">empty</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        判断链表是否为空</span></span><br><span class="line"><span class="string">        :return: True/False</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">return</span> self._size == <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_insert_between</span><span class="params">(self, value, prev_node, next_node)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        在两个节点之间插入元素</span></span><br><span class="line"><span class="string">        :param value: 插入元素的值</span></span><br><span class="line"><span class="string">        :param prev_node: 前驱节点</span></span><br><span class="line"><span class="string">        :param next_node: 后继节点</span></span><br><span class="line"><span class="string">        :return: 插入的节点</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        new_node = Node(value, prev_node, next_node)</span><br><span class="line">        prev_node.next = new_node</span><br><span class="line">        next_node.prev = new_node</span><br><span class="line">        self._size += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> new_node</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_delete_node</span><span class="params">(self, node)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        删除节点</span></span><br><span class="line"><span class="string">        :param node: 要删除的节点</span></span><br><span class="line"><span class="string">        :return: 删除节点的值</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        prev_node = node.prev</span><br><span class="line">        next_node = node.next</span><br><span class="line">        prev_node.next = next_node</span><br><span class="line">        next_node.prev = prev_node</span><br><span class="line">        self._size -= <span class="number">1</span></span><br><span class="line">        data = node.data</span><br><span class="line">        node.prev = node.next = node.data = <span class="literal">None</span></span><br><span class="line">        <span class="keyword">return</span> data</span><br></pre></td></tr></table></figure>
+
+<h3 id="含位置信息的列表抽象数据类型"><a href="#含位置信息的列表抽象数据类型" class="headerlink" title="含位置信息的列表抽象数据类型"></a>含位置信息的列表抽象数据类型</h3><p>到目前为止，我们所讨论的抽象数据类型包括栈、队列和双向队列等，并且仅允许在序列的一端进行更新操作。我们希望能够设计一个抽象数据类型来为用户提供一种可以定位到序列中任何元素的方法，并且能够执行任意的插入和删除操作。</p>
+<p>在处理基于数组的序列时，整数索引提供了一种很好的方式来描述一个元素的位置。然而，数字索引并不适用于描述一个链表内部的位置。此外，在描述某些应用程序中的本地位置时，索引并非好的抽象，因为序列中不停地发生插入或删除操作，条目的索引值会随着时间的推移发生变化。</p>
+<h4 id="定义ADT"><a href="#定义ADT" class="headerlink" title="定义ADT"></a>定义ADT</h4><p>为了给具有标识元素位置能力的元素序列提供一般化抽象，我们定义了一个含位置信息的列表ADT以及一个更简单的位置抽象数据类型来描述列表中的某个位置。将一个位置作为更广泛的位置列表中的一个标记。改变列表的其他位置不会影响位置p。使一个位置变得无效的唯一方法就是直接显式地发出一个命令来删除它。</p>
+<p>位置实例是一个简单的对象，只支持以下 方法：</p>
+<blockquote>
+<p>p.element(）：返回存储在位置p的元素。</p>
+</blockquote>
+<p>在位置列表ADT中，位置可以充当些方法的参数或是作为其他方法的返回值。在描述位置列表的行为时，我们介绍如下列表L所支持的访问器方法：</p>
+<blockquote>
+<p>L. first()：返回L中第一个元素的位置。如果L为空，则返回None。<br>L.last()：返回L中最后一个元素的位置。如果L为空，则返回None。<br>L. before(p)：返回L中p紧邻的前面元素的位置。如果p为第一个位置，则返回None。<br>L.after(p)：返回L中p紧邻的后面元素的位置。如果p为最后一个位置，则返回None。<br>L.is_empty()：如果L列表不包含任何元素返回True。<br>len(L)：返回列表元素的个数。<br>iter(L)：返回列表元素的前向迭代器。 </p>
+</blockquote>
+<p>位置列表ADT也包括以下更新方法：</p>
+<blockquote>
+<p>L.add_first(value)：在L的前面插入新元素value，返回新元素的位置。<br>L.add_last(value)：在L的后面插入新元素value，返回新元素的位置。<br>L.add_before(value, p)：在L中位置p之前插入一个新元素value，返回新元素的位置。<br>L.add_after(value, p)：在L中位置p之后插入一个新元素value，返回新元素的位置。<br>L.replace(value, p)：用元素value取代位置p处的元素，返回之前p位置处的元素。<br>L.delete(p)：删除并且返回L中位置p 处的元素，取消该位置。</p>
+</blockquote>
+<h4 id="基于双向链表实现"><a href="#基于双向链表实现" class="headerlink" title="基于双向链表实现"></a>基于双向链表实现</h4><p>我们采用类作为底层的表示，新类主要用于按照位置列表 ADT提供一 个公共的接口。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PositionalList</span><span class="params">(_DoublyLinkedBase)</span>:</span></span><br><span class="line">    <span class="string">""" 位置信息的列表类 """</span></span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Position</span><span class="params">(object)</span>:</span></span><br><span class="line">        <span class="string">""" 包含位置信息的类 """</span></span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, container, node)</span>:</span></span><br><span class="line">            <span class="string">"""</span></span><br><span class="line"><span class="string">            初始化位置信息</span></span><br><span class="line"><span class="string">            :param container: 所属的容器</span></span><br><span class="line"><span class="string">            :param node: 节点</span></span><br><span class="line"><span class="string">            """</span></span><br><span class="line">            self.container = container</span><br><span class="line">            self.node = node</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">data</span><span class="params">(self)</span>:</span></span><br><span class="line">            <span class="string">"""</span></span><br><span class="line"><span class="string">            获取节点的数据信息</span></span><br><span class="line"><span class="string">            :return: 数据信息</span></span><br><span class="line"><span class="string">            """</span></span><br><span class="line">            <span class="keyword">return</span> self.node.data</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">__eq__</span><span class="params">(self, other)</span>:</span></span><br><span class="line">            <span class="string">"""</span></span><br><span class="line"><span class="string">            判定是否相等</span></span><br><span class="line"><span class="string">            :param other: 比较对象</span></span><br><span class="line"><span class="string">            :return: True/False</span></span><br><span class="line"><span class="string">            """</span></span><br><span class="line">            <span class="keyword">return</span> type(self) <span class="keyword">is</span> type(other) <span class="keyword">and</span> self.node <span class="keyword">is</span> other.node</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">__ne__</span><span class="params">(self, other)</span>:</span></span><br><span class="line">            <span class="string">"""</span></span><br><span class="line"><span class="string">             判定是否不相等</span></span><br><span class="line"><span class="string">            :param other: 比较对象</span></span><br><span class="line"><span class="string">            :return: True/False</span></span><br><span class="line"><span class="string">            """</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">not</span> (self == other)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_validate</span><span class="params">(self, p)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        对位置p进行校验</span></span><br><span class="line"><span class="string">        :param p: 位置节点实例</span></span><br><span class="line"><span class="string">        :return: 位置节点的node信息</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> isinstance(p, self.Position):</span><br><span class="line">            <span class="keyword">raise</span> TypeError(<span class="string">"p must be Position type"</span>)</span><br><span class="line">        <span class="keyword">if</span> p.container <span class="keyword">is</span> <span class="keyword">not</span> self:</span><br><span class="line">            <span class="keyword">raise</span> TypeError(<span class="string">"p does not belong to this container"</span>)</span><br><span class="line">        <span class="keyword">if</span> p.node.next <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">"p is no longer valid"</span>)</span><br><span class="line">        <span class="keyword">return</span> p.node</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_make_position</span><span class="params">(self, node)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        给节点包装位置信息</span></span><br><span class="line"><span class="string">        :param node: 节点</span></span><br><span class="line"><span class="string">        :return: position实例</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">if</span> node <span class="keyword">is</span> self._head <span class="keyword">or</span> node <span class="keyword">is</span> self._tail:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> self.Position(self, node)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">first</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        返回表中第一个节点</span></span><br><span class="line"><span class="string">        :return: position实例</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">return</span> self._make_position(self._head.next)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">last</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        返回表中最后一个节点</span></span><br><span class="line"><span class="string">        :return: position实例</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">return</span> self._make_position(self._tail.prev)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">before</span><span class="params">(self, p)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        返回p紧邻的前面元素的位置</span></span><br><span class="line"><span class="string">        :param p: p元素位置</span></span><br><span class="line"><span class="string">        :return: 前面的位置</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        node = self._validate(p)</span><br><span class="line">        <span class="keyword">return</span> self._make_position(node.prev)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">after</span><span class="params">(self, p)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        返回p紧邻的后面元素的位置</span></span><br><span class="line"><span class="string">        :param p: p元素位置</span></span><br><span class="line"><span class="string">        :return: 后面元素的位置</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        node = self._validate(p)</span><br><span class="line">        <span class="keyword">return</span> self._make_position(node.next)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="string">""" 迭代器 """</span></span><br><span class="line">        cur = self.first()</span><br><span class="line">        <span class="keyword">while</span> cur <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">yield</span> cur.data()</span><br><span class="line">            cur = self.after(cur)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">_insert_between</span><span class="params">(self, value, prev_node, next_node)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        在两个节点之间插入元素</span></span><br><span class="line"><span class="string">        :param value: 插入元素的值</span></span><br><span class="line"><span class="string">        :param prev_node: 前驱节点</span></span><br><span class="line"><span class="string">        :param next_node: 后继节点</span></span><br><span class="line"><span class="string">        :return: 插入的节点位置信息</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        node = super(PositionalList, self)._insert_between(value, prev_node, next_node)</span><br><span class="line">        <span class="keyword">return</span> self._make_position(node)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_first</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        在开始插入新元素value，返回新元素的位置</span></span><br><span class="line"><span class="string">        :param value: 插入的值</span></span><br><span class="line"><span class="string">        :return: 插入的位置节点</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">return</span> self._insert_between(value, self._head, self._head.next)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_last</span><span class="params">(self, value)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        在最后插入新元素value，返回新元素的位置</span></span><br><span class="line"><span class="string">        :param value: 插入的值</span></span><br><span class="line"><span class="string">        :return: 插入的位置节点</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">return</span> self._insert_between(value, self._tail.prev, self._tail)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_before</span><span class="params">(self, value, p)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        在位置p之前插入一个新元素</span></span><br><span class="line"><span class="string">        :param value: 插入的值</span></span><br><span class="line"><span class="string">        :param p: p的位置</span></span><br><span class="line"><span class="string">        :return: 新元素的位置</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        node = self._validate(p)</span><br><span class="line">        <span class="keyword">return</span> self._insert_between(value, node.prev, node)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_after</span><span class="params">(self, value, p)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        在位置p之后插入一个新元素</span></span><br><span class="line"><span class="string">        :param value: 插入的值</span></span><br><span class="line"><span class="string">        :param p: p的位置</span></span><br><span class="line"><span class="string">        :return: 新元素的位置</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        node = self._validate(p)</span><br><span class="line">        <span class="keyword">return</span> self._insert_between(value, node, node.next)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">delete</span><span class="params">(self, p)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        删除位置p的元素</span></span><br><span class="line"><span class="string">        :param p: p的位置</span></span><br><span class="line"><span class="string">        :return: 删除节点的值</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        node = self._validate(p)</span><br><span class="line">        <span class="keyword">return</span> self._delete_node(node)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">replace</span><span class="params">(self, value, p)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        用元素value取代位置p处的元素</span></span><br><span class="line"><span class="string">        :param value: 替换的值</span></span><br><span class="line"><span class="string">        :param p: p的位置</span></span><br><span class="line"><span class="string">        :return: 替换的数据</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        node = self._validate(p)</span><br><span class="line">        data = node.data</span><br><span class="line">        node.data = value</span><br><span class="line">        <span class="keyword">return</span> data</span><br></pre></td></tr></table></figure>
+
+<h3 id="列表和链表的比较"><a href="#列表和链表的比较" class="headerlink" title="列表和链表的比较"></a>列表和链表的比较</h3><h4 id="基于数组的序列的优点"><a href="#基于数组的序列的优点" class="headerlink" title="基于数组的序列的优点"></a>基于数组的序列的优点</h4><ul>
+<li><p>数组提供时间复杂度为O(1)的基于整数索引的访问一个元素的方法。在一个链表中定位第k个元素要从起始位置遍历列表，其时间复杂度为O(k)。如果是反向遍历双向链表，则时间复杂度为O(n-k)。</p>
+</li>
+<li><p>通常，具有等效边界的操作使用基于数组的结构运行一个常数因子比基于链表的结构运行更有效率。例如，考虑一个针对队列的典型的enqueue操作。忽略调整数组大小的问题，ArrayQueue类上的这个操作包括一个新索引的计算算法、一个整数的增量，并在数组中为元素存储一个引用。相反，LinkedQueue的程序要求节点的实例化、节点的合适链接和整数的增量。当这个操作用另一<br>个模型在O(1)内完成时，链接版本中CPU操作的实际数量会更多，特别是考虑到新节点的实例化。</p>
+</li>
+<li><p>相较于链式结构，基于数组的表示使用存储的比例更少。基于数组的列表和链接列表都是可引用的结构，所以主存储器用于存储两种结构的元素的实际对象是相同的。而两者的不同点在于这两种结构使用的备用内存的数量。对于基于数组的n个元素的容器，一种典型的最坏情况是最近调整动态数组已经为2n对象引用分配内存。而对于链表内存不仅要存储每个所包含的对象的引用，还要明确地存储链接各个节点的引用。一个长度为n的单向链表至少需要2n个引用（每个节点的元素引用和指向下一个节点引用）。</p>
+</li>
+</ul>
+<h4 id="基于链表的序列的优点"><a href="#基于链表的序列的优点" class="headerlink" title="基于链表的序列的优点"></a>基于链表的序列的优点</h4><ul>
+<li>基于链表的结构为它们的操作提供最坏情况的时间界限。这与动态数组的扩张和收缩相关联的摊销边界相对应。</li>
+<li>基于链表的结构支持在任意位置进行时间复杂度为O(1)的插入和删除操作。这与基于数组的序列形成了鲜明的对比。忽略调整数组大小的问题，任何从基于数组列表的末尾插入或删除一个元素的操作都可以在常数时间内完成。然而，更普遍的插入和删除代价是很大的。例如用Python的基于数组列表类，调用索引为k的插入和删除使用的时间复杂度为O(n-k+1)，因为要循环替换所有后续元素。</li>
+</ul>
+<h3 id="LeetCode"><a href="#LeetCode" class="headerlink" title="LeetCode"></a>LeetCode</h3><h4 id="141-环形链表"><a href="#141-环形链表" class="headerlink" title="141. 环形链表"></a><a href="https://leetcode-cn.com/problems/linked-list-cycle/" target="_blank" rel="noopener">141. 环形链表</a></h4><p>给定一个链表，判断链表中是否有环。</p>
+<p>为了表示给定链表中的环，我们使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。 如果 pos 是 -1，则在该链表中没有环。</p>
+<p>示例 1：</p>
+<blockquote>
+<p>输入：head = [3,2,0,-4], pos = 1<br>输出：true<br>解释：链表中有一个环，其尾部连接到第二个节点。</p>
+</blockquote>
+<p>示例 2：</p>
+<blockquote>
+<p>输入：head = [1,2], pos = 0<br>输出：true<br>解释：链表中有一个环，其尾部连接到第一个节点。</p>
+</blockquote>
+<p>示例 3：</p>
+<blockquote>
+<p>输入：head = [1], pos = -1<br>输出：false<br>解释：链表中没有环。</p>
+</blockquote>
+<p>进阶：<br>你能用 O(1)（即，常量）内存解决此问题吗？</p>
+<h5 id="解法1："><a href="#解法1：" class="headerlink" title="解法1："></a>解法1：</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">hasCycle</span><span class="params">(self, head)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> head <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">or</span> head.next <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">        slow_cursor = head</span><br><span class="line">        fast_cursor = head.next</span><br><span class="line">        <span class="keyword">while</span> slow_cursor != fast_cursor:</span><br><span class="line">            <span class="keyword">if</span> fast_cursor <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">or</span> fast_cursor.next <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">            slow_cursor = slow_cursor.next</span><br><span class="line">            fast_cursor = fast_cursor.next.next</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br></pre></td></tr></table></figure>
+<p>使用快慢指针的方法，如果存在环，则快指针会与慢指针重合。</p>
+<p>时间复杂度：O(N)。<br>空间复杂度：O(1)。</p>
+<h4 id="206-反转链表"><a href="#206-反转链表" class="headerlink" title="206. 反转链表"></a><a href="https://leetcode-cn.com/problems/reverse-linked-list/" target="_blank" rel="noopener">206. 反转链表</a></h4><p>反转一个单链表。</p>
+<p>示例:</p>
+<blockquote>
+<p>输入: 1-&gt;2-&gt;3-&gt;4-&gt;5-&gt;NULL<br>输出: 5-&gt;4-&gt;3-&gt;2-&gt;1-&gt;NULL</p>
+</blockquote>
+<p>进阶:<br>你可以迭代或递归地反转链表。你能否用两种方法解决这道题？</p>
+<h5 id="解法1：-1"><a href="#解法1：-1" class="headerlink" title="解法1："></a>解法1：</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">reverseList</span><span class="params">(self, head)</span>:</span></span><br><span class="line">        prev = <span class="literal">None</span></span><br><span class="line">        cur = head</span><br><span class="line">        <span class="keyword">while</span> cur:</span><br><span class="line">            temp = cur.next</span><br><span class="line">            cur.next = prev</span><br><span class="line">            prev = cur</span><br><span class="line">            cur = temp</span><br><span class="line">        <span class="keyword">return</span> prev</span><br></pre></td></tr></table></figure>
+<p>使用双指针的方法，保存前一个节点和当前节点。在循环中保存当前节点的下一个节点。</p>
+<p>时间复杂度：O(N)。<br>空间复杂度：O(1)。</p>
+<h5 id="解法2："><a href="#解法2：" class="headerlink" title="解法2："></a>解法2：</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">reverseList</span><span class="params">(self, head)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> head <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">or</span> head.next <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">return</span> head</span><br><span class="line">        cur = self.reverseList(head.next)</span><br><span class="line">        head.next.next = head</span><br><span class="line">        head.next = <span class="literal">None</span></span><br><span class="line">        <span class="keyword">return</span> cur</span><br></pre></td></tr></table></figure>
+<p>使用递归的方法，倒序链接列表。</p>
+<p>时间复杂度：O(N)。<br>空间复杂度：O(N)。由于使用递归，将会使用隐式栈空间。递归深度可能会达到 nn 层</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/02/28/%E9%98%9F%E5%88%97/" rel="prev" title="队列">
+      <i class="fa fa-chevron-left"></i> 队列
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#单向链表"><span class="nav-number">1.</span> <span class="nav-text">单向链表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#单向链表实现"><span class="nav-number">1.1.</span> <span class="nav-text">单向链表实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#循环链表"><span class="nav-number">2.</span> <span class="nav-text">循环链表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#循环链表实现"><span class="nav-number">2.1.</span> <span class="nav-text">循环链表实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#双向链表"><span class="nav-number">3.</span> <span class="nav-text">双向链表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#双向链表实现"><span class="nav-number">3.1.</span> <span class="nav-text">双向链表实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#含位置信息的列表抽象数据类型"><span class="nav-number">4.</span> <span class="nav-text">含位置信息的列表抽象数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义ADT"><span class="nav-number">4.1.</span> <span class="nav-text">定义ADT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基于双向链表实现"><span class="nav-number">4.2.</span> <span class="nav-text">基于双向链表实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#列表和链表的比较"><span class="nav-number">5.</span> <span class="nav-text">列表和链表的比较</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#基于数组的序列的优点"><span class="nav-number">5.1.</span> <span class="nav-text">基于数组的序列的优点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基于链表的序列的优点"><span class="nav-number">5.2.</span> <span class="nav-text">基于链表的序列的优点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LeetCode"><span class="nav-number">6.</span> <span class="nav-text">LeetCode</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#141-环形链表"><span class="nav-number">6.1.</span> <span class="nav-text">141. 环形链表</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#解法1："><span class="nav-number">6.1.1.</span> <span class="nav-text">解法1：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#206-反转链表"><span class="nav-number">6.2.</span> <span class="nav-text">206. 反转链表</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#解法1：-1"><span class="nav-number">6.2.1.</span> <span class="nav-text">解法1：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#解法2："><span class="nav-number">6.2.2.</span> <span class="nav-text">解法2：</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Liu Tengfei</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Tengfei</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.7.1
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
